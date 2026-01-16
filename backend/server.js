@@ -57,6 +57,16 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 app.use('/uploads', express.static(join(__dirname, 'uploads')))
 
+// Serve frontend static files (Vite build) so backend can serve the SPA in production
+const frontendDist = join(__dirname, '..', 'dist')
+app.use(express.static(frontendDist))
+
+// SPA fallback: serve index.html for any non-API routes
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api')) return next()
+  res.sendFile(join(frontendDist, 'index.html'))
+})
+
 // Public/Customer Routes
 app.use('/api/auth', authRoutes)
 app.use('/api/products', productRoutes)
