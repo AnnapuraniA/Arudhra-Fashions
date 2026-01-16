@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm --prefix backend install --no-audit --no-fund && vite build",
+    "build": "npm install --no-audit --no-fund --include=dev && npm --prefix backend install --no-audit --no-fund && vite build",
     "preview": "vite preview",
     "start": "node backend/server.js"
   },
