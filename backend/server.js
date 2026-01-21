@@ -41,8 +41,19 @@ dotenv.config()
 const app = express()
 
 // Middleware
+const allowedOrigins = [
+  process.env.FRONTEND_URL || 'https://arudhrafashions.com',
+  process.env.ADMIN_URL || process.env.FRONTEND_URL || 'https://arudhrafashions.com',
+  'http://localhost:5173'
+]
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true)
+    if (allowedOrigins.includes(origin)) return callback(null, true)
+    return callback(new Error('Not allowed by CORS'), false)
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -106,14 +117,8 @@ app.get('/api/health', (req, res) => {
 })
 
 // Serve frontend static files (Vite build) so backend can serve the SPA in production
-const frontendDist = join(__dirname, '..', 'dist')
-app.use(express.static(frontendDist))
-
-// SPA fallback: serve index.html for any non-API routes
-app.get('*', (req, res, next) => {
-  if (req.path.startsWith('/api')) return next()
-  res.sendFile(join(frontendDist, 'index.html'))
-})
+// NOTE: frontend is served separately (e.g. static site on arudhrafashions.com).
+// Keep backend focused on API routes only so /api/* are handled here.
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -127,9 +132,10 @@ const startServer = async () => {
     await connectDB()
     
     const PORT = process.env.PORT || 5001
+    const HOST = process.env.HOST || '0.0.0.0'
 
-    app.listen(PORT, () => {
-      console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`)
+    app.listen(PORT, HOST, () => {
+      console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on ${HOST}:${PORT}`)
     })
   } catch (error) {
     console.error('Failed to start server:', error.message)

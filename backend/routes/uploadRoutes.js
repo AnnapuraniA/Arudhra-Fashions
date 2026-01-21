@@ -43,8 +43,9 @@ router.post('/images', adminProtect, (req, res, next) => {
 
       // Generate full URLs for uploaded files
       const protocol = req.protocol || 'http'
-      const host = req.get('host') || 'localhost:5001'
-      const baseUrl = `${protocol}://${host}`
+      const host = req.get('host')
+      const requestBase = `${protocol}://${host}`
+      const baseUrl = process.env.BACKEND_URL || process.env.API_URL || requestBase || 'https://api.arudhrafashions.com'
       
       const imageUrls = req.files.map(file => {
         // Return full URL path that will be served statically

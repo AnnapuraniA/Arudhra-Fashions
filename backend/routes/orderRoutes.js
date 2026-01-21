@@ -400,7 +400,7 @@ router.post('/:id/send-invoice', protect, async (req, res) => {
 
     // Generate invoice PDF
     const invoicePath = await generateInvoicePDF(order, user)
-    const backendUrl = process.env.BACKEND_URL || process.env.API_URL || 'http://localhost:5001'
+    const backendUrl = process.env.BACKEND_URL || process.env.API_URL || 'https://api.arudhrafashions.com'
     const invoiceUrl = `${backendUrl}${invoicePath}`
 
     const results = {
