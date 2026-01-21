@@ -47,17 +47,24 @@ const allowedOrigins = [
   'http://localhost:5173'
 ]
 
-app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl)
-    if (!origin) return callback(null, true)
-    if (allowedOrigins.includes(origin)) return callback(null, true)
-    return callback(new Error('Not allowed by CORS'), false)
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}))
+// Dynamic CORS middleware: reflect allowed origins and handle preflight requests
+app.use((req, res, next) => {
+  const origin = req.headers.origin
+
+  // Allow non-browser requests (curl, server-to-server) without origin
+  if (!origin) return next()
+
+  const isAllowed = allowedOrigins.includes(origin) || origin.endsWith('.arudhrafashions.com')
+  if (isAllowed) {
+    res.header('Access-Control-Allow-Origin', origin)
+    res.header('Access-Control-Allow-Credentials', 'true')
+    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+    res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    if (req.method === 'OPTIONS') return res.sendStatus(200)
+  }
+
+  return next()
+})
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
