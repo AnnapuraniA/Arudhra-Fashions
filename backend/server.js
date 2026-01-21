@@ -68,6 +68,29 @@ app.use((req, res, next) => {
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
+// Mark API responses so we can verify requests reach the backend server
+app.use('/api', (req, res, next) => {
+  res.header('X-Served-By', 'arudhra-backend')
+  next()
+})
+
+// Simple diagnostic endpoint to verify CORS and routing
+app.options('/api/diagnostic', (req, res) => {
+  // Respond to preflight explicitly
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*')
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+  res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+  res.header('Access-Control-Allow-Credentials', 'true')
+  return res.sendStatus(200)
+})
+app.get('/api/diagnostic', (req, res) => {
+  return res.json({
+    ok: true,
+    servedBy: 'arudhra-backend',
+    originHeader: req.headers.origin || null
+  })
+})
+
 // Serve static files (uploaded images)
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
